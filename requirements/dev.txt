@@ -1,0 +1,4 @@
+-r prd.txt
+
+pylint==3.3.8
+pre-commit==4.3.0
