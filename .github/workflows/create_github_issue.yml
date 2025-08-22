@@ -7,7 +7,7 @@ on:
 
   push:
     branches:
-      - DSN-131-vulnerability-fixer-github-action
+      - main
 
 jobs:
   create-issues:
