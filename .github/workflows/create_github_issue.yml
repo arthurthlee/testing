@@ -1,9 +1,9 @@
 name: Scheduled Dependabot Vulnerability Check
 
 on:
-  schedule:
-    - cron: "0 * * * *" # every hour
-  workflow_dispatch: # allow manual runs too
+  #schedule:
+  #  - cron: "0 * * * *" # every hour
+  #workflow_dispatch: # allow manual runs too
 
   push:
     branches:
