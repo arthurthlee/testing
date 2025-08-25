@@ -14,6 +14,7 @@ from github import Github
 SEVERITY_ORDER = {"critical": 4, "high": 3, "moderate": 2, "low": 1, "unknown": 0}
 
 
+
 def main():
     """
     Entry point for the script.
