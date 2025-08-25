@@ -41,6 +41,7 @@ def main():
         )
 
     alerts = resp.json()
+    alerts = [a for a in alerts if a.get("state") == "open"]
     print(f"Found {len(alerts)} alerts")
 
     # Find the alert with highest severity, breaking ties by earliest number
