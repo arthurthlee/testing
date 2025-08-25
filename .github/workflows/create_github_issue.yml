@@ -1,12 +1,15 @@
 name: Scheduled Dependabot Vulnerability Check
 
+
 on:
   #schedule:
-  #  - cron: "0 * * * *" # every hour
+  #  - cron: "0 0 * * *" # At the end of every day
   #workflow_dispatch: # allow manual runs too
 
   push:
     branches:
+      - test-branch
+      - DSN-131-vulnerability-fixer-github-action
       - main
 
 jobs:
@@ -41,4 +44,4 @@ jobs:
           TOKEN: ${{ steps.generate_jwt.outputs.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          python .github/scripts/create_vulnerability_issue.py
+          python scripts/delete_create_update_issues.py
