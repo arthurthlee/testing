@@ -89,6 +89,7 @@ def create_or_update_github_issue(repo, alert, all_dependabot_issues):
         - If an issue exists, append the alert details to the body (avoiding duplicates).
     """
     security_vulnerability = alert.get("security_vulnerability", {})
+    security_advisory = alert.get("security_advisory", {})
     package_name = (
         security_vulnerability
         .get("package", {})
@@ -111,8 +112,8 @@ def create_or_update_github_issue(repo, alert, all_dependabot_issues):
 
 **Dependabot Alert #{alert_number}** - Security vulnerability in **{package_name}**
 
-Summary: {security_vulnerability.get('summary', 'No summary available')}
-Description: {security_vulnerability.get('description', 'No description available')}
+Summary: {security_advisory.get('summary', 'No summary available')}
+Description: {security_advisory.get('description', 'No description available')}
 
 **Severity:** {severity}
 **Fixed in:** {fixed_in}
