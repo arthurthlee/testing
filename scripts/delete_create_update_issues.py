@@ -243,5 +243,7 @@ def delete_dependabot_github_issues(repo):
         issue.edit(state="closed", state_reason="duplicate")
         print(f"Issue #{issue.number} deleted.")
 
+
+
 if __name__ == "__main__":
     main()
