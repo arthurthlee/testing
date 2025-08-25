@@ -104,7 +104,8 @@ def create_or_update_github_issue(repo, alert, all_dependabot_issues):
     alert_number = alert.get("number", "Unknown")
 
     # Create a unique identifier for this specific alert
-    alert_id = f"alert-{alert_number}"
+    alert_id = f"<!-- alert-{alert_number} -->"
+
 
     new_alert_section = f"""
 ---
