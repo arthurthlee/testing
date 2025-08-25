@@ -173,7 +173,7 @@ def sync_issue_with_alerts(issue, pkg_alerts):
     # Close issue if empty
     remaining_alert_ids = ALERT_ID_PATTERN.findall(body)
     if not remaining_alert_ids:
-        issue.edit(state="closed", state_reason="resolved")
+        issue.edit(state="closed", state_reason="completed")
         print(f"Issue #{issue.number} has no remaining alerts, closed.")
         return
 
