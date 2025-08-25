@@ -62,6 +62,7 @@ def main():
 
     print(f"Processing top severity alert for package: {top_alert_package_name} with {len(package_alerts)} total alerts")
     # Look for an existing open issue for this specific package
+    repo = g.get_repo(repo_name)
     dependabot_issues = list(repo.get_issues(state="open", labels=["dependabot"]))
     all_dependabot_issues = {}
     for issue in dependabot_issues:
