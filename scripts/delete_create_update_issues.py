@@ -58,7 +58,7 @@ def main():
     top_severity = top_alert.get("security_vulnerability", {}).get("severity", "unknown")
 
     # Collect all alerts for that same package
-    package_alerts = [a for a in alerts if a.get("security_vulnerability", {}).get("package", {}).get("name", "") == package_name]
+    package_alerts = [a for a in alerts if a.get("security_vulnerability", {}).get("package", {}).get("name", "").lower() == package_name.lower()]
 
 
     # Look for an existing open issue for this specific package
