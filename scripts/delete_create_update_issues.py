@@ -43,7 +43,7 @@ def main():
     g = Github(token)
     repo = g.get_repo(repo_name)
     # Delete all existing issues with dependabot label
-    delete_dependabot_github_issues()
+    delete_dependabot_github_issues(repo)
 
     # Find the alert with highest severity, breaking ties by earliest number
     alerts_sorted = sorted(
