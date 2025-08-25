@@ -54,13 +54,12 @@ def main():
         )
     )
     top_alert = alerts_sorted[0]
-    package_name = top_alert.get("security_vulnerability", {}).get("package", {}).get("name", "unknown")
-    top_severity = top_alert.get("security_vulnerability", {}).get("severity", "unknown")
+    top_alert_package_name = top_alert.get("security_vulnerability", {}).get("package", {}).get("name", "unknown")
 
     # Collect all alerts for that same package
-    package_alerts = [a for a in alerts if a.get("security_vulnerability", {}).get("package", {}).get("name", "").lower() == package_name.lower()]
+    package_alerts = [a for a in alerts if a.get("security_vulnerability", {}).get("package", {}).get("name", "").lower() == top_alert_package_name.lower()]
 
-
+    print(f"Processing top severity alert for package: {top_alert_package_name} with {len(package_alerts)} total alerts")
     # Look for an existing open issue for this specific package
     dependabot_issues = list(repo.get_issues(state="open", labels=["dependabot"]))
     all_dependabot_issues = {}
