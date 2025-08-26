@@ -3,8 +3,12 @@ name: SWE-Agent Dependabot Fix
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [labeled]
 
+# Prevent concurrent runs for the same issue
+concurrency:
+  group: swe-agent-${{ github.event.issue.number }}
+  cancel-in-progress: true  # Cancel previous runs if new one starts
 
 jobs:
   check-labels:
@@ -18,25 +22,30 @@ jobs:
         with:
           github-token: ${{ secrets.PAT_TOKEN }}
           script: |
-            const labels = context.payload.issue.labels.map(label => label.name);
-            const hasDependabotLabel = labels.includes('dependabot');
+            console.log(`Action: ${context.payload.action}`);
+            console.log(`Label added: ${context.payload.label?.name || 'none'}`);
 
-            if (!hasDependabotLabel) {
-              console.log('❌ Issue does not have dependabot label');
+            // Only proceed if the open-swe label was just added
+            if (context.payload.action === 'labeled') {
+              const addedLabel = context.payload.label;
+              if (!addedLabel || addedLabel.name !== 'open-swe') {
+                console.log(`❌ Wrong label added: ${addedLabel?.name || 'unknown'}`);
+                return false;
+              }
+              console.log('✅ open-swe label was just added');
+            }
+
+            // Verify the issue has both required labels
+            const labels = context.payload.issue.labels.map(label => label.name);
+            const hasOpenSwe = labels.includes('open-swe');
+            const hasDependabot = labels.includes('dependabot');
+
+            if (!hasOpenSwe || !hasDependabot) {
+              console.log(`❌ Missing required labels. Has open-swe: ${hasOpenSwe}, Has dependabot: ${hasDependabot}`);
               return false;
             }
 
-            console.log('✅ Issue has dependabot label');
-
-            // For labeled events, only proceed if the dependabot label was just added
-            if (context.payload.action === 'labeled') {
-              const addedLabel = context.payload.label;
-              if (!addedLabel || addedLabel.name !== 'dependabot') {
-                console.log(`❌ Different label was added: ${addedLabel?.name || 'unknown'}`);
-                return false;
-              }
-              console.log('✅ Dependabot label was just added');
-            }
+            console.log('✅ Issue has both required labels');
 
             // Check if we've already created a PR for this issue
             const { data: allPulls } = await github.rest.pulls.list({
@@ -68,7 +77,6 @@ jobs:
 
             console.log('✅ Should run SWE-Agent for this issue');
             return true;
-
   swe-agent-fix:
     needs: check-labels
     if: needs.check-labels.outputs.should_run == 'true'
