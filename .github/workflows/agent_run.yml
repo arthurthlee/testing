@@ -86,29 +86,31 @@ jobs:
           ${{ steps.issue_info.outputs.issue_body }}
           EOF
 
-      - name: Run SWE-agent
-        env:
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-          ISSUE_NUMBER: ${{ steps.issue_info.outputs.issue_number }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          cd SWE-agent
-          sweagent run \
-            --agent.model.name=claude-sonnet-4-20250514 \
-            --agent.model.per_instance_cost_limit=3.00 \
-            --env.repo.path=.. \
-            --problem_statement.path=../problem_statement.txt
+      #- name: Run SWE-agent
+      #  env:
+      #    PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+      #    ISSUE_NUMBER: ${{ steps.issue_info.outputs.issue_number }}
+      #    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      #    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      #  run: |
+      #    cd SWE-agent
+      #    sweagent run \
+      #      --agent.model.name=claude-sonnet-4-20250514 \
+      #      --agent.model.per_instance_cost_limit=3.00 \
+      #      --env.repo.path=.. \
+      #      --problem_statement.path=../problem_statement.txt
 
       - name: Check for changes
         id: changes
+        #run: |
+        #  git add -A
+        #  if git diff --cached --quiet; then
+        #    echo "has_changes=false" >> $GITHUB_OUTPUT
+        #  else
+        #    echo "has_changes=true" >> $GITHUB_OUTPUT
+        #  fi
         run: |
-          git add -A
-          if git diff --cached --quiet; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          fi
+          echo "has_changes=true" >> $GITHUB_OUTPUT
 
       - name: Commit changes
         if: steps.changes.outputs.has_changes == 'true'
@@ -131,6 +133,7 @@ jobs:
         if: steps.changes.outputs.has_changes == 'true'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN }}
           script: |
             const { data: pullRequest } = await github.rest.pulls.create({
               owner: context.repo.owner,
@@ -173,6 +176,7 @@ jobs:
         if: steps.changes.outputs.has_changes == 'true'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN }}
           script: |
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -189,6 +193,7 @@ jobs:
         if: steps.changes.outputs.has_changes == 'false'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN }}
           script: |
             await github.rest.issues.createComment({
               owner: context.repo.owner,
