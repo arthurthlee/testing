@@ -7,7 +7,7 @@ on:
 jobs:
   run-claude-agent:
     # Only run on issues created by your Dependabot->Issue workflow
-    if: contains(github.event.issue.title, '[dependabot]')
+    if: contains(join(github.event.issue.labels.*.name, ','), 'dependabot')
 
     runs-on: ubuntu-latest
 
@@ -30,10 +30,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REPO_NAME: ${{ github.repository }}
-          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
         run: |
-          python scripts/run_claude_agent.py \
-            --issue_number "$ISSUE_NUMBER" \
-            --repo "$REPO_NAME" \
-            --github_token "$GITHUB_TOKEN" \
-            --claude_api_key "$CLAUDE_API_KEY"
+          sweagent run \
+            --agent.model.name=claude-sonnet-4-20250514 \
+            --agent.model.per_instance_cost_limit=2.00 \
+            --env.repo.github_url=https://github.com/arthurthlee/${{ github.repository }} \
+            --problem_statement.github_url=https://github.com/arthurthlee/${{ github.repository }}/issues/${{ github.event.issue.number }}
