@@ -17,6 +17,7 @@ def load_yaml_file(filename="dangerous.yaml"):
         content = f.read()
     return yaml.load(content)
 
+
 def main():
     config = load_yaml_file()
     print(config)
