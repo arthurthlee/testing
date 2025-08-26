@@ -23,57 +23,57 @@ def main():
     token = os.environ["TOKEN"]
     repo_name = os.environ["GITHUB_REPOSITORY"]
 
-    print("Finding Dependency vulnerabilities...")
+    print("Fetching Dependabot alerts...")
+    alerts = fetch_dependabot_alerts(repo_name, token)
+    open_alerts = [a for a in alerts if a.get("state") == "open"]
 
-    # Query Dependabot alerts API
-    url = f"https://api.github.com/repos/{repo_name}/dependabot/alerts"
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28"
-    }
-    resp = requests.get(url, headers=headers, timeout=10)
-
-    if resp.status_code != 200:
-        print("Failed to fetch vulnerability alerts")
-        raise RuntimeError(
-            f"Failed to fetch alerts from repo {url} {resp.status_code} {resp.text}"
-        )
-
-    alerts = resp.json()
-    alerts = [a for a in alerts if a.get("state") == "open"]
-    print(f"Found {len(alerts)} alerts")
-
-    # Find the alert with highest severity, breaking ties by earliest number
-    alerts_sorted = sorted(
-        alerts,
-        key=lambda a: (
-            -SEVERITY_ORDER.get(a.get("security_vulnerability", {}).get("severity", "unknown").lower(), 0),
-            a.get("number", float("inf"))
-        )
-    )
-    top_alert = alerts_sorted[0]
-    top_alert_package_name = top_alert.get("security_vulnerability", {}).get("package", {}).get("name", "unknown")
-
-
-    print(f"Top severity package: {top_alert_package_name}")
-
-    # Collect all alerts for that same package
-    package_alerts = [a for a in alerts if a.get("security_vulnerability", {}).get("package", {}).get("name", "").lower() == top_alert_package_name.lower()]
+    if not open_alerts:
+        print("No alerts found.")
+    print(f"Found {len(open_alerts)} alerts")
 
     g = Github(token)
     repo = g.get_repo(repo_name)
 
-    print(f"Processing top severity alert for package: {top_alert_package_name} with {len(package_alerts)} total alerts")
-
     # Look for an existing open issue for this specific package
     dependabot_issues = list(repo.get_issues(state="open", labels=["dependabot"]))
+    existing_issue = next(iter(dependabot_issues), None)
+
+    if not open_alerts:
+        # If no alerts, close the existing issue
+        if existing_issue:
+            print(f"Closing issue #{existing_issue.number}, no open alerts remain")
+            existing_issue.edit(state="closed", state_reason="resolved")
+        return
+
+    # Find the alert with highest severity, breaking ties by earliest number
+    alerts_sorted = sorted(
+        open_alerts,
+        key=lambda a: (
+            -SEVERITY_ORDER.get(
+                a["security_vulnerability"].get("severity", "unknown").lower(),
+                0
+            ),
+            a.get("number", float("inf"))
+        )
+    )
+    top_alert = alerts_sorted[0]
+    top_alert_pkg_name = top_alert["security_vulnerability"]["package"]["name"].lower()
+
+    print(f"Top severity package: {top_alert_pkg_name}")
+
+    # Collect all alerts for that same package
+    package_alerts = [
+        a for a in alerts \
+            if a["security_vulnerability"]["package"]["name"].lower() == top_alert_pkg_name.lower()]
+
+    print(f"Processing top severity alert for package: \
+{top_alert_pkg_name} with {len(package_alerts)} total alerts")
 
     # If multiple issues exist, close all but one
     main_issue = None
     for issue in dependabot_issues:
         pkg_name = issue.title.lower().replace("security vulnerability detected: ", "")
-        if pkg_name == top_alert_package_name and main_issue is None:
+        if pkg_name == top_alert_pkg_name and main_issue is None:
             main_issue = issue
         else:
             # Close irrelevant issues
@@ -83,16 +83,34 @@ def main():
     if main_issue:
         sync_issue_with_alerts(main_issue, package_alerts)
     else:
-        create_issue_for_package(repo, top_alert_package_name, package_alerts)
+        create_issue_for_package(repo, top_alert_pkg_name, package_alerts)
+
+
+
+def fetch_dependabot_alerts(repo_name, token):
+    """Fetch Dependabot alerts from GitHub API."""
+    url = f"https://api.github.com/repos/{repo_name}/dependabot/alerts"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        resp.raise_for_status()
+        return resp.json()
+    except requests.RequestException as e:
+        print(f"Failed to fetch alerts: {e}")
+        return []
 
 
 
 def format_alert_section(alert):
     """Format an alert as a markdown section."""
-    security_vulnerability = alert.get("security_vulnerability", {})
-    security_advisory = alert.get("security_advisory", {})
+    security_vulnerability = alert["security_vulnerability"]
+    security_advisory = alert["security_advisory"]
 
-    package_name = security_vulnerability.get("package", {}).get("name", "unknown")
+    package_name = security_vulnerability["package"]["name"]
     severity = security_vulnerability.get("severity", "unknown")
     fixed_in = security_vulnerability.get("first_patched_version", {}).get("identifier", "N/A")
     advisory_url = alert.get("html_url", "No advisory link")
@@ -101,6 +119,8 @@ def format_alert_section(alert):
 
     return f"""
 ---
+
+{alert_id}
 
 **Dependabot Alert #{alert_number}** - Security vulnerability in **{package_name}**
 
@@ -112,8 +132,6 @@ Description: {security_advisory.get('description', 'No description available')}
 
 More details: [Security Advisory]({advisory_url})
 
-{alert_id}
-
 <details>
 <summary>Full Vulnerability Details</summary>
 
@@ -124,18 +142,18 @@ More details: [Security Advisory]({advisory_url})
 
 
 
-
 def create_issue_for_package(repo, pkg_name, pkg_alerts):
     """Create a new GitHub issue for the top severity package."""
     issue_title = f"Security vulnerability detected: {pkg_name}"
     alert_sections = [format_alert_section(alert) for alert in pkg_alerts]
-    body = f"This issue tracks security vulnerabilities detected by Dependabot for **{pkg_name}**.\n\n"
+    body = f"This issue tracks security vulnerabilities detected by Dependabot for \
+**{pkg_name}**.\n\n"
     body += "\n".join(alert_sections)
 
     severities = set(
-        alert.get("security_vulnerability", {}).get("severity", "unknown").lower()
+        alert["security_vulnerability"].get("severity", "unknown").lower()
         for alert in pkg_alerts
-        if alert.get("security_vulnerability", {}).get("severity", "unknown").lower() != "unknown"
+        if alert["security_vulnerability"].get("severity", "unknown").lower() != "unknown"
     )
     labels = ["dependabot", "open-swe"] + [f"severity-{s}" for s in severities]
 
@@ -146,7 +164,7 @@ def create_issue_for_package(repo, pkg_name, pkg_alerts):
 
 def sync_issue_with_alerts(issue, pkg_alerts):
     """Update issue body and labels, remove resolved alerts, close if empty."""
-    active_alert_ids = {f"alert-{alert.get('number')}" for alert in pkg_alerts}
+    active_alert_ids = {f"alert-{alert['number']}" for alert in pkg_alerts}
     body = issue.body or ""
 
     # Remove alert sections that are no longer active
@@ -154,7 +172,7 @@ def sync_issue_with_alerts(issue, pkg_alerts):
     for alert_id in current_alert_ids:
         if alert_id not in active_alert_ids:
             body = re.sub(
-                rf"\n---.*?<!-- {alert_id} -->.*?</details>\n",
+                rf"\n---.*?<!-- alert-{alert_id} -->.*?</details>\n",
                 "",
                 body,
                 flags=re.DOTALL
@@ -164,7 +182,7 @@ def sync_issue_with_alerts(issue, pkg_alerts):
     # Append new alerts
     existing_ids = set(ALERT_ID_PATTERN.findall(body))
     for alert in pkg_alerts:
-        alert_number = alert.get("number")
+        alert_number = alert["number"]
         alert_id = f"alert-{alert_number}"
         if alert_id not in existing_ids:
             new_section = format_alert_section(alert)
@@ -178,14 +196,7 @@ def sync_issue_with_alerts(issue, pkg_alerts):
         print(f"Issue #{issue.number} has no remaining alerts, closed.")
         return
 
-    # Update labels
-    update_issue_labels(issue, pkg_alerts)
-    issue.edit(body=body)
-    print(f"Issue #{issue.number} synchronized.")
-
-
-def update_issue_labels(issue, pkg_alerts):
-    """Update labels to reflect current alerts and severities."""
+    # Update labels and body in single call
     current_labels = {label.name for label in issue.labels}
     current_labels.add("dependabot")
     current_labels.add("open-swe")
@@ -193,7 +204,11 @@ def update_issue_labels(issue, pkg_alerts):
         severity = alert.get("security_vulnerability", {}).get("severity", "unknown").lower()
         if severity != "unknown":
             current_labels.add(f"severity-{severity}")
-    issue.edit(labels=list(current_labels))
+
+    # Single edit call with both body and labels
+    issue.edit(body=body, labels=list(current_labels))
+    print(f"Issue #{issue.number} synchronized.")
+
 
 
 if __name__ == "__main__":
