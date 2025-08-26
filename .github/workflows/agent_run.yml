@@ -37,7 +37,7 @@ jobs:
 
       - name: Install SWE-agent
         run: |
-          pip install swe-agent
+          pip install sweagent
 
       - name: Set up API keys
         env:
