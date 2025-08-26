@@ -75,7 +75,17 @@ jobs:
 
       - name: Create branch for fix
         run: |
-          BRANCH_NAME="swe-agent-fix-issue-${{ steps.issue_info.outputs.issue_number }}"
+          # Create a unique branch name with timestamp to avoid conflicts
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          BRANCH_NAME="swe-agent-fix-issue-${{ steps.issue_info.outputs.issue_number }}-${TIMESTAMP}"
+
+          # Delete branch if it exists locally
+          git branch -D $BRANCH_NAME 2>/dev/null || true
+
+          # Delete branch if it exists remotely (ignore errors)
+          git push origin --delete $BRANCH_NAME 2>/dev/null || true
+
+          # Create and checkout new branch
           git checkout -b $BRANCH_NAME
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
