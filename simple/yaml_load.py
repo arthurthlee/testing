@@ -8,12 +8,18 @@ directory and loads it using PyYAML.
 import os
 import yaml
 
-# Read the YAML file content
-yaml_path = os.path.join(os.path.dirname(__file__), "dangerous.yaml")
-with open(yaml_path, "r", encoding="utf-8") as f:
-    content = f.read()
+def load_yaml_file(filename="dangerous.yaml"):
+    """
+    Load and return the contents of the given YAML file as a Python object.
+    """
+    yaml_path = os.path.join(os.path.dirname(__file__), filename)
+    with open(yaml_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return yaml.load(content, Loader=yaml.SafeLoader)  # safer
 
+def main():
+    config = load_yaml_file()
+    print(config)
 
-# Load the YAML
-config = yaml.load(content)
-print(config)
+if __name__ == "__main__":
+    main()

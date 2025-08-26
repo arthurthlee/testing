@@ -3,29 +3,15 @@ Pytest tests for yaml_load module.
 
 Tests the loading of YAML files using PyYAML to ensure content can be
 read and parsed correctly.
-
 """
 
-import os
-import yaml
+from simple import yaml_load  # adjust import path depending on test layout
 
 
 def test_load_arbitrary_yaml():
     """
-    Test loading of an arbitrary YAML file.
-
-    Opens 'dangerous.yaml', reads its content, and verifies that
-    yaml.load() produces a valid Python object.
+    Test loading of an arbitrary YAML file via yaml_load.load_yaml_file().
     """
-    yaml_path = os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "simple",
-        "dangerous.yaml"
-    )
-    yaml_path = os.path.abspath(yaml_path)
-    with open(yaml_path, "r", encoding="utf-8") as f:
-        yaml_content = f.read()
-    result = yaml.load(yaml_content)
-    assert result
+    result = yaml_load.load_yaml_file("dangerous.yaml")
+    assert result is not None
+    assert isinstance(result, (dict, list))  # depending on YAML structure

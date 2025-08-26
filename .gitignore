@@ -1,6 +1,6 @@
 .venv/*
-example_simple/__pycache__/*
+simple/__pycache__/*
 tests/test_simple/__pycache__/*
-example_complex/__pycache__/*
+complex/__pycache__/*
 tests/test_complex/__pycache__/*
 tests/__pycache__/*
