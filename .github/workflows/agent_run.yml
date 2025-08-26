@@ -37,14 +37,18 @@ jobs:
 
       - name: Install SWE-agent
         run: |
-          pip install sweagent
+          git clone https://github.com/SWE-agent/SWE-agent.git
+          cd SWE-agent
+          python -m pip install --upgrade pip
+          pip install --editable .
 
       - name: Set up API keys
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Create .env file with API keys in the current directory
+          # Create .env file with API keys in the SWE-agent directory
+          cd SWE-agent
           echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env
           echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> .env
 
@@ -77,10 +81,11 @@ jobs:
           ISSUE_TITLE: ${{ steps.issue_info.outputs.issue_title }}
           ISSUE_BODY: ${{ steps.issue_info.outputs.issue_body }}
         run: |
+          cd SWE-agent
           sweagent run \
             --agent.model.name=claude-sonnet-4-20250514 \
             --agent.model.per_instance_cost_limit=3.00 \
-            --env.repo.path=. \
+            --env.repo.path=.. \
             --problem_statement.text="${{ steps.issue_info.outputs.issue_title }}\n\n${{ steps.issue_info.outputs.issue_body }}"
 
       - name: Check for changes
