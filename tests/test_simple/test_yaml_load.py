@@ -21,7 +21,7 @@ def test_load_arbitrary_yaml():
         os.path.dirname(__file__),
         "..",
         "..",
-        "example__simple",
+        "example_simple",
         "dangerous.yaml"
     )
     yaml_path = os.path.abspath(yaml_path)
