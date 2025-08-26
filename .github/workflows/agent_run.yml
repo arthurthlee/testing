@@ -192,6 +192,19 @@ jobs:
           rm -f .env
           rm -rf SWE-agent
 
+      - name: Ensure generated files are ignored
+        run: |
+          if [ ! -f .gitignore ]; then
+            echo ".gitignore not found, creating one"
+            touch .gitignore
+          fi
+
+          for pattern in ".env" "problem_statement.txt" "SWE-agent/"; do
+            if ! grep -qx "$pattern" .gitignore; then
+              echo "$pattern" >> .gitignore
+            fi
+          done
+
       - name: Commit changes
         if: steps.changes.outputs.has_changes == 'true'
         run: |
