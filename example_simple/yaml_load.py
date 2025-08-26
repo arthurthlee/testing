@@ -15,5 +15,5 @@ with open(yaml_path, "r", encoding="utf-8") as f:
 
 
 # Load the YAML
-config = yaml.load(content)  # Works in 5.1
+config = yaml.load(content)
 print(config)

@@ -27,5 +27,5 @@ def test_load_arbitrary_yaml():
     yaml_path = os.path.abspath(yaml_path)
     with open(yaml_path, "r", encoding="utf-8") as f:
         yaml_content = f.read()
-    result = yaml.load(yaml_content)  # Works in PyYAML 5.1
+    result = yaml.load(yaml_content)
     assert result
