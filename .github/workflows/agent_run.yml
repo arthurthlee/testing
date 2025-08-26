@@ -26,15 +26,19 @@ jobs:
               return false;
             }
 
-            // Check if we've already created a PR for this issue
-            const { data: pulls } = await github.rest.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'all',
-              head: `${context.repo.owner}:swe-agent-fix-issue-${context.payload.issue.number}`
-            });
+            console.log('✅ Issue has dependabot label');
 
-            // Also check for PRs with timestamped branch names
+            // For labeled events, only proceed if the dependabot label was just added
+            if (context.payload.action === 'labeled') {
+              const addedLabel = context.payload.label;
+              if (!addedLabel || addedLabel.name !== 'dependabot') {
+                console.log(`❌ Different label was added: ${addedLabel?.name || 'unknown'}`);
+                return false;
+              }
+              console.log('✅ Dependabot label was just added');
+            }
+
+            // Check if we've already created a PR for this issue
             const { data: allPulls } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -48,19 +52,16 @@ jobs:
             if (existingPR) {
               console.log(`❌ PR already exists: ${existingPR.html_url}`);
 
-              // Add a comment to the issue if this is a labeled event
-              if (context.payload.action === 'labeled') {
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: context.payload.issue.number,
-                  body: `🤖 **SWE-Agent has already processed this issue**
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                body: `🤖 **SWE-Agent has already processed this issue**
 
-                  An existing pull request was found: ${existingPR.html_url}
+                An existing pull request was found: ${existingPR.html_url}
 
-                  If you need to re-run SWE-Agent, please close the existing PR first.`
-                });
-              }
+                If you need to re-run SWE-Agent, please close the existing PR first.`
+              });
 
               return false;
             }
