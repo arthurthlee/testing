@@ -27,7 +27,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
 
       - name: Set up Python
@@ -47,10 +47,13 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Create .env file with API keys in the SWE-agent directory
-          cd SWE-agent
+          # Create .env file with API keys in the working directory where sweagent will look for it
           echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env
           echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> .env
+
+          # Also set as environment variables for this session
+          echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
+          echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> $GITHUB_ENV
 
       - name: Extract issue information
         id: issue_info
@@ -84,8 +87,10 @@ jobs:
 
       - name: Run SWE-agent
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
           ISSUE_NUMBER: ${{ steps.issue_info.outputs.issue_number }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           cd SWE-agent
           sweagent run \
