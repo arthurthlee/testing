@@ -77,7 +77,7 @@ def main():
             main_issue = issue
         else:
             # Close irrelevant issues
-            issue.edit(state="closed", state_reason="duplicate")
+            issue.edit(state="closed", state_reason="not_planned")
             print(f"Closed irrelevant issue #{issue.number}")
 
     if main_issue:
