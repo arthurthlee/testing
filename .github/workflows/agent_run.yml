@@ -12,13 +12,61 @@ jobs:
     outputs:
       should_run: ${{ steps.check.outputs.result }}
     steps:
-      - name: Check if issue has dependabot label
+      - name: Check if issue has dependabot label and should run
         id: check
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN }}
           script: |
             const labels = context.payload.issue.labels.map(label => label.name);
-            return labels.includes('dependabot');
+            const hasDependabotLabel = labels.includes('dependabot');
+
+            if (!hasDependabotLabel) {
+              console.log('❌ Issue does not have dependabot label');
+              return false;
+            }
+
+            // Check if we've already created a PR for this issue
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              head: `${context.repo.owner}:swe-agent-fix-issue-${context.payload.issue.number}`
+            });
+
+            // Also check for PRs with timestamped branch names
+            const { data: allPulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all'
+            });
+
+            const existingPR = allPulls.find(pr =>
+              pr.head.ref.startsWith(`swe-agent-fix-issue-${context.payload.issue.number}`)
+            );
+
+            if (existingPR) {
+              console.log(`❌ PR already exists: ${existingPR.html_url}`);
+
+              // Add a comment to the issue if this is a labeled event
+              if (context.payload.action === 'labeled') {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.issue.number,
+                  body: `🤖 **SWE-Agent has already processed this issue**
+
+                  An existing pull request was found: ${existingPR.html_url}
+
+                  If you need to re-run SWE-Agent, please close the existing PR first.`
+                });
+              }
+
+              return false;
+            }
+
+            console.log('✅ Should run SWE-Agent for this issue');
+            return true;
 
   swe-agent-fix:
     needs: check-labels
