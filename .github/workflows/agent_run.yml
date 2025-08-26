@@ -5,11 +5,6 @@ on:
   issues:
     types: [labeled]
 
-# Prevent concurrent runs for the same issue
-concurrency:
-  group: swe-agent-${{ github.event.issue.number }}
-  cancel-in-progress: true  # Cancel previous runs if new one starts
-
 jobs:
   check-labels:
     runs-on: ubuntu-latest
