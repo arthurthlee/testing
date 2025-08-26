@@ -2,7 +2,7 @@
 Pytest tests for yaml_load module.
 
 Tests the loading of YAML files using PyYAML to ensure content can be
-read and parsed correctly with PyYAML 5.1.
+read and parsed correctly.
 
 """
 
@@ -21,7 +21,7 @@ def test_load_arbitrary_yaml():
         os.path.dirname(__file__),
         "..",
         "..",
-        "example_vulnerability_simple",
+        "example__simple",
         "dangerous.yaml"
     )
     yaml_path = os.path.abspath(yaml_path)

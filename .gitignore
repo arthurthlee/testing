@@ -1,6 +1,6 @@
 .venv/*
-example_vulnerability_simple/__pycache__/*
-tests/test_example_vulnerability_simple/__pycache__/*
-example_vulnerability_complex/__pycache__/*
-tests/test_example_vulnerability_complex/__pycache__/*
+example__simple/__pycache__/*
+tests/test_example__simple/__pycache__/*
+example__complex/__pycache__/*
+tests/test_example__complex/__pycache__/*
 tests/__pycache__/*

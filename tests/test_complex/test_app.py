@@ -1,12 +1,12 @@
 """
-Unit tests for the example_vulnerability_complex.app module.
+Unit tests for the complex.app module.
 
 These tests verify that the token generation and validation logic
 behaves as expected under specific package versions of Flask and
 itsdangerous.
 """
 
-from example_vulnerability_complex.app import create_token, verify_token
+from complex.app import create_token, verify_token
 
 def test_round_trip():
     """
