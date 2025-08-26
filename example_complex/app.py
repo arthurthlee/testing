@@ -23,7 +23,6 @@ def create_token(data):
         >>> create_token({"user": "alice"})
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
     """
-    # Works in itsdangerous 1.x
     s = Serializer(SECRET_KEY, expires_in=60)
     return s.dumps(data).decode("utf-8")
 
