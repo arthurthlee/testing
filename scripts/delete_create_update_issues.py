@@ -12,6 +12,7 @@ import requests
 from github import Github
 
 
+
 # Define severity ranking
 SEVERITY_ORDER = {"critical": 4, "high": 3, "moderate": 2, "low": 1, "unknown": 0}
 
