@@ -92,7 +92,7 @@ jobs:
             --agent.model.name=claude-sonnet-4-20250514 \
             --agent.model.per_instance_cost_limit=3.00 \
             --env.repo.path=.. \
-            --problem_statement.file=../problem_statement.txt
+            --problem_statement.path=../problem_statement.txt
 
       - name: Check for changes
         id: changes
