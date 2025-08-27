@@ -44,7 +44,7 @@ def main():
         # If no alerts, close the existing issue
         if existing_issue:
             print(f"Closing issue #{existing_issue.number}, no open alerts remain")
-            existing_issue.edit(state="closed", state_reason="resolved")
+            existing_issue.edit(state="closed", state_reason="completed")
         return
 
     # Find the alert with highest severity, breaking ties by earliest number

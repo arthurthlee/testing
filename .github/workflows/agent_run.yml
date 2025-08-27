@@ -257,8 +257,8 @@ jobs:
         if: steps.check_changes.outputs.changes == 'true'
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          github_token: ${{ secrets.PAT_TOKEN }}
+          branch: ${{ github.BRANCH_NAME }}
 
       - name: Create Pull Request
         if: steps.check_changes.outputs.changes == 'true'
