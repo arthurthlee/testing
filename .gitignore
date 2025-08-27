@@ -1,7 +1,12 @@
-.venv/*
-simple/__pycache__/*
-tests/test_simple/__pycache__/*
-complex/__pycache__/*
-tests/test_complex/__pycache__/*
-tests/__pycache__/*
+
+# Excluded files
+.env
 .pytest_cache
+.venv/*
+SWE-agent/
+complex/__pycache__/*
+problem_statement.txt
+simple/__pycache__/*
+tests/__pycache__/*
+tests/test_complex/__pycache__/*
+tests/test_simple/__pycache__/*
