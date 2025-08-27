@@ -5,7 +5,7 @@ A minimal Flask application demonstrating the use of itsdangerous for token
 generation and validation.
 """
 
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous import URLSafeTimedSerializer
 
 SECRET_KEY = "supersecret"
 
@@ -23,8 +23,8 @@ def create_token(data):
         >>> create_token({"user": "alice"})
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
     """
-    s = Serializer(SECRET_KEY, expires_in=60)
-    return s.dumps(data).decode("utf-8")
+    s = URLSafeTimedSerializer(SECRET_KEY)
+    return s.dumps(data)
 
 def verify_token(token):
     """
@@ -44,5 +44,5 @@ def verify_token(token):
         >>> verify_token('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...')
         {'user': 'alice'}
     """
-    s = Serializer(SECRET_KEY, expires_in=60)
-    return s.loads(token)
+    s = URLSafeTimedSerializer(SECRET_KEY)
+    return s.loads(token, max_age=60)
