@@ -1,4 +1,4 @@
-name: SWE-Agent Dependabot Fix
+name: SWE-Agent Fix
 
 
 on:
@@ -12,7 +12,7 @@ jobs:
     outputs:
       should_run: ${{ steps.check.outputs.result }}
     steps:
-      - name: Check if issue has dependabot label and should run
+      - name: Check if issue has label and should run
         id: check
         uses: actions/github-script@v7
         with:
@@ -21,27 +21,15 @@ jobs:
             console.log(`Action: ${context.payload.action}`);
             console.log(`Label added: ${context.payload.label?.name || 'none'}`);
 
-            // Only proceed if the open-swe label was just added
+            // Only proceed if the swe-agent label was just added
             if (context.payload.action === 'labeled') {
               const addedLabel = context.payload.label;
-              if (!addedLabel || addedLabel.name !== 'open-swe') {
-                console.log(`❌ Wrong label added: ${addedLabel?.name || 'unknown'}`);
+              if (!addedLabel || addedLabel.name !== 'swe-agent') {
+                console.log(`❌ swe-agent label was not added. Added: ${addedLabel?.name || 'unknown'}`);
                 return false;
               }
-              console.log('✅ open-swe label was just added');
+              console.log('✅ swe-agent label was just added');
             }
-
-            // Verify the issue has both required labels
-            const labels = context.payload.issue.labels.map(label => label.name);
-            const hasOpenSwe = labels.includes('open-swe');
-            const hasDependabot = labels.includes('dependabot');
-
-            if (!hasOpenSwe || !hasDependabot) {
-              console.log(`❌ Missing required labels. Has open-swe: ${hasOpenSwe}, Has dependabot: ${hasDependabot}`);
-              return false;
-            }
-
-            console.log('✅ Issue has both required labels');
 
             // Check if we've already created a PR for this issue
             const { data: allPulls } = await github.rest.pulls.list({
@@ -298,7 +286,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: pullRequest.number,
-                labels: ['swe-agent', 'automated-fix', 'dependabot']
+                labels: ['swe-agent', 'automated-fix']
               });
 
               console.log(`Created PR #${pullRequest.number}: ${pullRequest.html_url}`);

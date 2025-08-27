@@ -12,7 +12,6 @@ import requests
 from github import Github
 
 
-
 # Define severity ranking
 SEVERITY_ORDER = {"critical": 4, "high": 3, "moderate": 2, "low": 1, "unknown": 0}
 
@@ -157,7 +156,7 @@ def create_issue_for_package(repo, pkg_name, pkg_alerts):
         for alert in pkg_alerts
         if alert["security_vulnerability"].get("severity", "unknown").lower() != "unknown"
     )
-    labels = ["dependabot", "open-swe"] + [f"severity-{s}" for s in severities]
+    labels = ["dependabot", "swe-agent"] + [f"severity-{s}" for s in severities]
 
     new_issue = repo.create_issue(title=issue_title, body=body, labels=labels)
     print(f"Created issue #{new_issue.number} for package {pkg_name}")
@@ -201,7 +200,7 @@ def sync_issue_with_alerts(issue, pkg_alerts):
     # Update labels and body in single call
     current_labels = {label.name for label in issue.labels}
     current_labels.add("dependabot")
-    current_labels.add("open-swe")
+    current_labels.add("swe-agent")
     for alert in pkg_alerts:
         severity = alert.get("security_vulnerability", {}).get("severity", "unknown").lower()
         if severity != "unknown":
