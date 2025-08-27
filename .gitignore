@@ -4,3 +4,4 @@ tests/test_simple/__pycache__/*
 complex/__pycache__/*
 tests/test_complex/__pycache__/*
 tests/__pycache__/*
+.pytest_cache

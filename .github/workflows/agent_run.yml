@@ -101,11 +101,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Create .env file with API keys in the working directory where sweagent will look for it
-          echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env
-          echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> .env
 
-          # Also set as environment variables for this session
+          # Set as environment variables for this session
           echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
           echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> $GITHUB_ENV
 
@@ -186,10 +183,9 @@ jobs:
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Remove problem statement file, .env file, and SWE-agent directory
+      - name: Remove problem statement file and SWE-agent directory
         run: |
           rm -f problem_statement.txt
-          rm -f .env
           rm -rf SWE-agent
 
       - name: Ensure generated files are ignored
