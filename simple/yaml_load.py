@@ -15,7 +15,7 @@ def load_yaml_file(filename="dangerous.yaml"):
     yaml_path = os.path.join(os.path.dirname(__file__), filename)
     with open(yaml_path, "r", encoding="utf-8") as f:
         content = f.read()
-    return yaml.safe_load(content)
+    return yaml.load(content)
 
 
 def main():
