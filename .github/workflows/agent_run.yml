@@ -256,10 +256,9 @@ jobs:
 
       - name: Push changes
         if: steps.check_changes.outputs.changes == 'true'
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.PAT_TOKEN }}
-          branch: ${{ github.BRANCH_NAME }}
+        run: |
+          echo "Pushing branch: ${{ env.BRANCH_NAME }}"
+          git push -u origin ${{ env.BRANCH_NAME }}
 
       - name: Create Pull Request
         if: steps.check_changes.outputs.changes == 'true'
