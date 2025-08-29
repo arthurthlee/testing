@@ -61,6 +61,7 @@ jobs:
 
             console.log('✅ Should run SWE-Agent for this issue');
             return true;
+
   swe-agent-fix:
     needs: check-labels
     if: needs.check-labels.outputs.should_run == 'true'
