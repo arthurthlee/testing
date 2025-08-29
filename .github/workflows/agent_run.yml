@@ -240,11 +240,9 @@ jobs:
             echo "Fix summary file found, reading content..."
             # Read the file content and set it as output
             # Using heredoc to handle multiline content properly
-            {
-              echo 'summary<<EOF'
-              cat FIX_SUMMARY.md
-              echo EOF
-            } >> $GITHUB_OUTPUT
+            echo 'summary<<EOF' >> $GITHUB_OUTPUT
+            cat FIX_SUMMARY.md >> $GITHUB_OUTPUT
+            echo 'EOF' >> $GITHUB_OUTPUT
           else
             echo "FIX_SUMMARY.md not found, using default message"
             echo "summary=SWE-Agent analyzed the codebase and generated fixes based on the issue description." >> $GITHUB_OUTPUT
