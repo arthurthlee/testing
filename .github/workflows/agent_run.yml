@@ -199,10 +199,10 @@ jobs:
           git rm --cached .env 2>/dev/null || true
           git rm --cached -r SWE-agent/ 2>/dev/null || true
           git rm --cached problem_statement.txt 2>/dev/null || true
-          git rm --cached FIX_SUMMARY.md 2>/dev/null || true
+          git rm --cached FIX_SUMMARY.txt 2>/dev/null || true
 
           # Add them to .gitignore if not already there
-          echo -e "\n# Excluded files\n.env\nSWE-agent/\nproblem_statement.txt/\nFIX_SUMMARY.md" >> .gitignore
+          echo -e "\n# Excluded files\n.env\nSWE-agent/\nproblem_statement.txt/\nFIX_SUMMARY.txt" >> .gitignore
 
           # Remove duplicates from .gitignore
           sort .gitignore | uniq > .gitignore.tmp && mv .gitignore.tmp .gitignore
@@ -216,7 +216,7 @@ jobs:
           git reset HEAD .env 2>/dev/null || true
           git reset HEAD SWE-agent/ 2>/dev/null || true
           git reset HEAD problem_statement.txt 2>/dev/null || true
-          git reset HEAD FIX_SUMMARY.md 2>/dev/null || true
+          git reset HEAD FIX_SUMMARY.txt 2>/dev/null || true
 
           # Show what will be committed
           echo "Files to be committed:"
@@ -233,16 +233,41 @@ jobs:
             echo "Changes detected"
           fi
 
-      - name: Read FIX_SUMMARY.md
+      - name: Create mock FIX_SUMMARY.txt for testing
+        if: ${{ vars.MOCK_SWE_AGENT || 'false' }}
+        run: |
+          echo "Creating mock FIX_SUMMARY.txt for testing..."
+          cat > FIX_SUMMARY.txt << 'MOCK_EOF'
+          ## Summary of Changes
+
+          ### Files Modified:
+          - `src/requirements.txt` - Updated dependencies
+          - `app.py` - Fixed validation logic
+          - `tests/test_app.py` - Added new test cases
+
+          ### Key Changes:
+          1. **Dependencies Update**: Updated package requirements to resolve compatibility issues
+          2. **Validation Fix**: Fixed input validation that was causing errors with special characters
+          3. **Test Coverage**: Added comprehensive test cases for edge cases
+
+          ### Technical Details:
+          - Replaced deprecated `old_function()` with `new_function()`
+          - Added proper error handling for network timeouts
+          - Implemented input sanitization for user data
+
+          This fix addresses the core issue while maintaining backward compatibility.
+          MOCK_EOF
+
+      - name: Read FIX_SUMMARY.txt
         id: fix_summary
         run: |
-          if [ -f "FIX_SUMMARY.md" ]; then
+          if [ -f "FIX_SUMMARY.txt" ]; then
             echo "Fix summary file found, reading content..."
             # Read the file content and escape it for GitHub Actions
-            SUMMARY_CONTENT=$(cat FIX_SUMMARY.md | sed ':a;N;$!ba;s/\n/%0A/g' | sed 's/\r/%0D/g')
+            SUMMARY_CONTENT=$(cat FIX_SUMMARY.txt | sed ':a;N;$!ba;s/\n/%0A/g' | sed 's/\r/%0D/g')
             echo "summary=$SUMMARY_CONTENT" >> $GITHUB_OUTPUT
           else
-            echo "FIX_SUMMARY.md not found, using default message"
+            echo "FIX_SUMMARY.txt not found, using default message"
             echo "summary=SWE-Agent analyzed the codebase and generated fixes based on the issue description." >> $GITHUB_OUTPUT
           fi
 
