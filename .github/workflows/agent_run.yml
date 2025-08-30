@@ -302,7 +302,7 @@ jobs:
           ## Summary of Changes
 
           ### Files Modified:
-          - `README.md` - Added mock fix section
+          - README.md - Added mock fix section
 
           ### Key Changes:
           1. **Mock Testing**: Added test content to verify GitHub Actions workflow
