@@ -3,9 +3,11 @@
 .env
 .pytest_cache
 .venv/*
+FIX_SUMMARY.txt
 SWE-agent/
 complex/__pycache__/*
 problem_statement.txt
+problem_statement.txt/
 simple/__pycache__/*
 tests/__pycache__/*
 tests/test_complex/__pycache__/*
