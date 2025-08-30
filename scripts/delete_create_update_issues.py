@@ -150,7 +150,9 @@ def create_issue_for_package(repo, pkg_name, pkg_alerts):
     body = f"This issue tracks security vulnerabilities detected by Dependabot for \
 **{pkg_name}**. We need to update the packages, and apply code fixes where necessary in the application. \
 We need to pin the package version to the latest version compatible with the application code, but not any newer. \
-We also need to add a FIX_SUMMARY.md file which describes what was fixed in the pull request.\n\n"
+We also need to add a FIX_SUMMARY.txt file which describes what was fixed in the pull request. \
+However, since we are going to parse the FIX_SUMMARY.txt file in Javascript, \
+it cannot contain any character that would break a JavaScript template string, such as backticks. \n\n"
     body += "\n".join(alert_sections)
 
     severities = set(
