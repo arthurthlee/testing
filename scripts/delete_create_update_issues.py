@@ -12,10 +12,11 @@ import requests
 from github import Github
 
 
+
 # Define severity ranking
 SEVERITY_ORDER = {"critical": 4, "high": 3, "moderate": 2, "low": 1, "unknown": 0}
 
-ALERT_ID_PATTERN = re.compile(r"<!-- alert-(\d+) -->")
+ALERT_ID_PATTERN = re.compile(r"\*\*Dependabot Alert #(\d+)\*\*")
 
 def main():
     """
@@ -116,12 +117,9 @@ def format_alert_section(alert):
     fixed_in = security_vulnerability.get("first_patched_version", {}).get("identifier", "N/A")
     advisory_url = alert.get("html_url", "No advisory link")
     alert_number = alert.get("number", "unknown")
-    alert_id = f"<!-- alert-{alert_number} -->"
 
     return f"""
 ---
-
-{alert_id}
 
 **Dependabot Alert #{alert_number}** - Security vulnerability in **{package_name}**
 
@@ -148,7 +146,8 @@ def create_issue_for_package(repo, pkg_name, pkg_alerts):
     issue_title = f"Security vulnerability detected: {pkg_name}"
     alert_sections = [format_alert_section(alert) for alert in pkg_alerts]
     body = f"This issue tracks security vulnerabilities detected by Dependabot for \
-**{pkg_name}**. We need to update the packages, and apply code fixes where necessary in the application. \
+**{pkg_name}**. \
+We need to update the packages, and apply code fixes where necessary in the application. \
 We need to pin the package version to the latest version compatible with the application code, but not any newer. \
 We also need to add a FIX_SUMMARY.txt file which describes what was fixed in the pull request. \
 However, since we are going to parse the FIX_SUMMARY.txt file in Javascript, \
@@ -194,6 +193,9 @@ def sync_issue_with_alerts(issue, pkg_alerts):
             body += "\n" + new_section
             print(f"Appended new alert #{alert_number} to issue #{issue.number}")
 
+    # Clean the entire body
+    body = clean_text_content(body)
+
     # Close issue if empty
     remaining_alert_ids = ALERT_ID_PATTERN.findall(body)
     if not remaining_alert_ids:
@@ -214,6 +216,39 @@ def sync_issue_with_alerts(issue, pkg_alerts):
     issue.edit(body=body, labels=list(current_labels))
     print(f"Issue #{issue.number} synchronized.")
 
+
+def clean_text_content(text):
+    """
+    Clean text content to remove any invisible characters or problematic content.
+
+    Args:
+        text: Raw text that may contain invisible characters
+
+    Returns:
+        Cleaned text safe for GitHub issues
+    """
+    if not text:
+        return ""
+
+    # Remove any remaining HTML comments
+    text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
+
+    # Remove excessive whitespace but preserve intentional line breaks
+    text = re.sub(r'\n\s*\n\s*\n', '\n\n', text)  # Collapse multiple empty lines
+    text = re.sub(r'[ \t]+', ' ', text)  # Collapse multiple spaces/tabs
+
+    # Remove invisible Unicode characters
+    invisible_chars = [
+        '\u200b',  # Zero width space
+        '\u200c',  # Zero width non-joiner
+        '\u200d',  # Zero width joiner
+        '\u2060',  # Word joiner
+        '\ufeff',  # Zero width no-break space (BOM)
+    ]
+    for char in invisible_chars:
+        text = text.replace(char, '')
+
+    return text.strip()
 
 
 if __name__ == "__main__":
